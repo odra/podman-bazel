@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ -z "${BAZEL_IMAGE}" ]; then
+	BAZEL_IMAGE="localhost/bazel:latest"
+fi
+
+if [ $# -eq 0 ]; then
+	BAZEL_ARGS=''
+else
+	BAZEL_ARGS="${@}"
+fi
+
+podman run \
+-it \
+--rm \
+--name bazel \
+--userns keep-id \
+--workdir /build \
+--volume ${PWD}:/workspace:Z \
+--tmpfs /build \
+${BAZEL_IMAGE} ${BAZEL_ARGS}

@@ -1,0 +1,3 @@
+FROM localhost/bazel:latest
+
+RUN dnf install -y gcc gcc-c++

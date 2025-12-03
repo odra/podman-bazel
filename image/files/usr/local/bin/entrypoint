@@ -1,0 +1,10 @@
+#!/bin/bash
+
+echo $@
+
+if [ $# -eq 0 ]; then
+  (cd /workspace; /bin/bash)
+else
+  cd /workspace
+  /usr/local/bin/bazel $@
+fi
