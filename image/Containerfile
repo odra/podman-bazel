@@ -27,11 +27,17 @@ RUN dnf install -y \
     grpcurl \
     && dnf clean all
 
-RUN dnf install -y gcc gcc-g++
+# bazel needs this
+RUN dnf install -y gcc gcc-g++ clang
+
+# needed by score
+RUN dnf install -y protobuf-compiler protobuf-devel
+
+# needed by autosd toolchain
+RUN dnf install -y cpio rpm2cpio binutils
 
 RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 \
     && chmod +x /usr/local/bin/bazel
-
 COPY files/ /
-
+ 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
