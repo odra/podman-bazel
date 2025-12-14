@@ -4,10 +4,32 @@ if [ -z "${BAZEL_IMAGE}" ]; then
 	BAZEL_IMAGE="localhost/bazel:latest"
 fi
 
-if [ $# -eq 0 ]; then
-	BAZEL_ARGS=''
+for arg in "$@"; do
+	case $arg in
+		--image=*)
+			BAZEL_IMAGE="${arg#*=}"
+            		shift
+            		;;
+        	--build-dir=*)
+	    		BAZEL_BUILD_DIR="${arg#*=}"
+            		shift 1
+            		;;
+    		--)
+          		shift 1
+	  		;;
+        	*)
+	  		BAZEL_ARGS="$@"
+          		;;
+  	esac
+done
+
+
+
+if [ -z "${BAZEL_BUILD_DIR}" ]; then
+	BUILD_MOUNT="--tmpfs /build"
 else
-	BAZEL_ARGS="${@}"
+	mkdir -p $(realpath ${BAZEL_BUILD_DIR})
+	BUILD_MOUNT="-v $(realpath ${BAZEL_BUILD_DIR}):/build:Z"
 fi
 
 podman run \
@@ -17,5 +39,16 @@ podman run \
 --userns keep-id \
 --workdir /build \
 --volume ${PWD}:/workspace:Z \
---tmpfs /build \
+${BUILD_MOUNT} \
 ${BAZEL_IMAGE} ${BAZEL_ARGS}
+
+
+build_links=("bazel-bin" "bazel-out" "bazel-testlogs" "bazel-workspace")
+for build_link in ${build_links[@]}; do
+	if [ -L "${build_link}" ] && [ ! -e "${build_link}" ]; then
+		link_path="$(readlink ${build_link})"
+		fixed_build_link="${link_path//\/build/_build}"
+		unlink ${build_link}
+		ln -s ${fixed_build_link} ${build_link}
+	fi
+done

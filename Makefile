@@ -24,7 +24,10 @@ test/module_sample:
 	podman build -t localhost/bazel:test test/
 	(\
 	cd test/module_sample;\
-	BAZEL_IMAGE=localhost/bazel:test ../../src/podman-bazel build //main:hello;\
-	BAZEL_IMAGE=localhost/bazel:test ../../src/podman-bazel clean --expunge;\
+	BAZEL_IMAGE=localhost/bazel:test ../../src/podman-bazel -- build //main:hello;\
+	BAZEL_IMAGE=localhost/bazel:test ../../src/podman-bazel -- clean --expunge;\
+	BAZEL_IMAGE=localhost/bazel:test ../../src/podman-bazel --buildr-dir=./_build -- build //main:hello;\
+	stat ./_build;\
+	BAZEL_IMAGE=localhost/bazel:test ../../src/podman-bazel -- clean --expunge;\
 	)
 
