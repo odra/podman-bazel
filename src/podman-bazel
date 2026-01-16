@@ -43,12 +43,15 @@ ${BUILD_MOUNT} \
 ${BAZEL_IMAGE} ${BAZEL_ARGS}
 
 
-build_links=("bazel-bin" "bazel-out" "bazel-testlogs" "bazel-workspace")
-for build_link in ${build_links[@]}; do
-	if [ -L "${build_link}" ] && [ ! -e "${build_link}" ]; then
-		link_path="$(readlink ${build_link})"
-		fixed_build_link="${link_path//\/build/_build}"
-		unlink ${build_link}
-		ln -s ${fixed_build_link} ${build_link}
-	fi
-done
+
+if [ ! -z "${BAZEL_BUILD_DIR}" ]; then
+	build_links=("bazel-bin" "bazel-out" "bazel-testlogs" "bazel-workspace")
+	for build_link in ${build_links[@]}; do
+		if [ -L "${build_link}" ] && [ ! -e "${build_link}" ]; then
+			link_path="$(readlink ${build_link})"
+			fixed_build_link="${link_path//\/build/${BAZEL_BUILD_DIR}}"
+			unlink ${build_link}
+			ln -s ${fixed_build_link} ${build_link}
+		fi
+	done
+fi
